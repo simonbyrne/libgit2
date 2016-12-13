@@ -215,6 +215,10 @@ int git_libgit2_opts(int key, ...)
 		}
 		break;
 
+	case GIT_OPT_ENABLE_SYNCHRONIZED_OBJECT_CREATION:
+		git_object__synchronized_writing = (va_arg(ap, int) != 0);
+		break;
+
 	default:
 		giterr_set(GITERR_INVALID, "invalid option key");
 		error = -1;
