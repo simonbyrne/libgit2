@@ -17,6 +17,7 @@
 #include "oid.h"
 #include "oidmap.h"
 #include "zstream.h"
+#include "object.h"
 
 GIT__USE_OIDMAP
 
@@ -971,7 +972,9 @@ int git_indexer_commit(git_indexer *idx, git_transfer_progress *stats)
 		return -1;
 
 	if (git_filebuf_open(&index_file, filename.ptr,
-		GIT_FILEBUF_HASH_CONTENTS, idx->mode) < 0)
+		GIT_FILEBUF_HASH_CONTENTS |
+		(git_object__synchronized_writing ? GIT_FILEBUF_FSYNC : 0),
+		idx->mode) < 0)
 		goto on_error;
 
 	/* Write out the header */
@@ -1041,6 +1044,12 @@ int git_indexer_commit(git_indexer *idx, git_transfer_progress *stats)
 		goto on_error;
 
 	git_mwindow_free_all(&idx->pack->mwf);
+
+	if (git_object__synchronized_writing && p_fsync(idx->pack->mwf.fd) < 0) {
+		giterr_set(GITERR_OS, "failed to fsync packfile");
+		goto on_error;
+	}
+
 	/* We need to close the descriptor here so Windows doesn't choke on commit_at */
 	if (p_close(idx->pack->mwf.fd) < 0) {
 		giterr_set(GITERR_OS, "failed to close packfile");
