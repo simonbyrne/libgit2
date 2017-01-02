@@ -150,7 +150,8 @@ v0.25
   If this is `NULL`, then it will not be called and the `exists` function
   will be used instead.
 
-* `git_remote_connect()` now accepts proxy options.
+* `git_fetch_options`, `git_push_options` and `git_remote_connect()` now
+  accept proxy options.
 
 v0.24
 -------
